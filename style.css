@@ -82,3 +82,5 @@ nav .pp button.on{background:var(--pri);color:#fff}
 .tbl th{background:var(--pri-soft)}
 .opt .tbl{margin:2px 0}
 @media print{.tbl th{background:#eee!important}.tbl th,.tbl td{border-color:#888}}
+.kb .del{flex:1 0 auto;color:var(--bad)}
+#kq{margin-top:6px}

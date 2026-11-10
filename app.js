@@ -121,8 +121,8 @@ function render() { drawNav(); ({ print: vPrint, login: vLogin, practice: vPract
 /* ---------- 登入 ---------- */
 function vLogin() {
   draw(`<h1>歡迎來刷題</h1><p class="lead">自己取一個代稱(不要用真實姓名),再設定 4 位數密碼。第一次使用會自動建立帳號。</p>
-  <div class="card" style="max-width:420px"><label>你的名字(自己取的代稱)</label><input id="nm" type="text" maxlength="20" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" lang="en" value="${esc(ls.get("ac:last") || "")}">
-  <p class="note" style="margin:4px 0 0">中文、英文、數字都可以。若輸入法切不到英文,按 <a href="#" id="kbt">⌨ 英數鍵盤</a> 用畫面上的鍵盤輸入。英文不分大小寫。</p><div id="kb" class="kb" hidden></div>
+  <div class="card" style="max-width:420px"><label>你的名字(自己取的代稱)</label><input id="nm" type="text" maxlength="20" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" value="${esc(ls.get("ac:last") || "")}">
+  <p class="note" style="margin:4px 0 0">中文、英文、數字都可以。用中文輸入法時,數字鍵會變成注音符號,<b>請改按下面的數字鍵</b>(也可刪除、清除)。要輸入英文字母,按 <a href="#" id="kbt">⌨ 英文字母鍵盤</a> 用畫面上的鍵盤輸入。英文不分大小寫。</p><div id="kq" class="kb"><button type="button" data-c="1">1</button><button type="button" data-c="2">2</button><button type="button" data-c="3">3</button><button type="button" data-c="4">4</button><button type="button" data-c="5">5</button><button type="button" data-c="6">6</button><button type="button" data-c="7">7</button><button type="button" data-c="8">8</button><button type="button" data-c="9">9</button><button type="button" data-c="0">0</button><button type="button" data-c="⌫" class="del">⌫ 刪除</button><button type="button" data-c="CLR" class="del">清除</button></div><div id="kb" class="kb" hidden></div>
   <label>4 位數密碼 <span class="note">(用下面的數字鍵輸入,或直接打字)</span></label><input id="pin" type="text" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="例如 1234">
   <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-n="${n}">${n}</button>`).join("")}<button type="button" data-n="C">清除</button><button type="button" data-n="0">0</button><button type="button" data-n="B">←</button></div>
   <p id="err" class="note" style="color:var(--bad);min-height:22px"></p><div class="hint" style="margin:0 0 12px">⚠️ 請牢記你取的「名字」和「密碼」!以後要用<b>完全相同</b>的名字和密碼登入,才看得到自己的錯題與作答紀錄。忘記了無法找回。</div><button class="btn" id="ok">進入</button>
@@ -166,7 +166,8 @@ function vLogin() {
   };
   const nmEl = $app.querySelector("#nm"), kb = $app.querySelector("#kb");
   kb.innerHTML = "1234567890qwertyuiopasdfghjklzxcvbnm".split("").map(c => `<button type="button" data-c="${c}">${c}</button>`).join("") + '<button type="button" data-c="_">_</button><button type="button" data-c="-">-</button><button type="button" data-c="⌫" class="wide">⌫ 刪除</button>';
-  kb.onclick = e => { const b = e.target.closest("[data-c]"); if (!b) return; const c = b.dataset.c; nmEl.value = c === "⌫" ? nmEl.value.slice(0, -1) : (nmEl.value + c).slice(0, 20); };
+  const kq = $app.querySelector("#kq");
+  kb.onclick = kq.onclick = e => { const b = e.target.closest("[data-c]"); if (!b) return; e.preventDefault(); const c = b.dataset.c, ch = Array.from(nmEl.value); nmEl.blur(); nmEl.value = c === "CLR" ? "" : c === "⌫" ? ch.slice(0, -1).join("") : ch.concat(c).slice(0, 20).join(""); };
   $app.querySelector("#kbt").onclick = e => { e.preventDefault(); kb.hidden = !kb.hidden; };
   $app.querySelector("#ok").onclick = submit;
   const pin = $app.querySelector("#pin");
