@@ -41,7 +41,7 @@ async function cloud(body, keepalive) {
   try { const r = await fetch(CLOUD(), { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body), signal: ac.signal, keepalive: !!keepalive && JSON.stringify(body).length < 60000 }); return await r.json(); }
   finally { clearTimeout(to); }
 }
-const pack = d => ({ paper: "A", wrong: d.wrong, mastered: d.mastered, log: d.log.slice(-1500) });
+const pack = (d, limit = 1500) => ({ paper: "A", wrong: d.wrong, mastered: d.mastered, log: d.log.slice(-limit) });
 function merge(a, b) {
   const out = { wrong: {}, mastered: {}, log: [] };
   const ids = new Set([a, b].flatMap(x => [...Object.keys(x.wrong || {}), ...Object.keys(x.mastered || {})]));
@@ -60,11 +60,29 @@ function schedulePush() {
   SY.st = "busy"; syncBadge(); clearTimeout(SY.timer); SY.timer = setTimeout(push, 2500);
 }
 async function push(keep) {
-  clearTimeout(SY.timer); SY.timer = null; clearTimeout(SY.retry);
+  clearTimeout(SY.timer);
+  SY.timer = null;
+  clearTimeout(SY.retry);
   if (!CLOUD() || !S.user || !SY.pin || !S.data) return;
-  const body = { a: "save", name: S.user, pin: SY.pin, data: pack(S.data) };
-  try { const r = await cloud(body, keep); SY.st = r.ok ? "idle" : "err"; if (!r.ok) SY.retry = setTimeout(push, 30000); }
-  catch { SY.st = "err"; SY.retry = setTimeout(push, 30000); }
+  const user = S.user, pin = SY.pin, local = S.data;
+  const body = { a: "save", name: user, pin, data: pack(local, keep ? 300 : 1500) };
+  try {
+    const result = await cloud(body, keep);
+    if (S.user !== user || SY.pin !== pin || S.data !== local) return;
+    if (!result.ok) throw new Error("sync");
+    if (result.data) {
+      const merged = merge(local, result.data);
+      Object.assign(local, merged);
+      ls.set(key(user), JSON.stringify(local));
+      if (S.view === "wrong") render();
+      else drawNav();
+    }
+    SY.st = SY.timer ? "busy" : "idle";
+  } catch {
+    if (S.user !== user || SY.pin !== pin || S.data !== local) return;
+    SY.st = "err";
+    if (!SY.timer) SY.retry = setTimeout(push, 30000);
+  }
   syncBadge();
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && SY.timer) push(true); });
@@ -140,7 +158,7 @@ function vLogin() {
     if (CLOUD()) {
       busy = true; btn.disabled = true; btn.textContent = "登入中…"; err.textContent = "";
       try {
-        const r = await cloud({ a: "login", name: n, pin: p, data: localOk ? pack(d) : null });
+        const r = await cloud({ a: "login", name: n, pin: p, data: localOk ? pack(d, 6000) : null });
         if (!r.ok) {
           busy = false; btn.disabled = false; btn.textContent = "進入";
           return err.textContent = r.err === "pin" ? "密碼不對" : r.err === "locked" ? `密碼輸錯太多次,請 ${r.wait || 10} 分鐘後再試` : r.err === "busy" ? "伺服器忙碌中,請稍後再按一次" : "雲端回應異常,請稍後再試";
@@ -332,6 +350,13 @@ function vMe() {
 /* ---------- 啟動 ---------- */
 (function init() {
   let cur = null; try { cur = sessionStorage.getItem("ac:cur"); } catch {}
-  if (cur) { try { const d = JSON.parse(ls.get(key(cur))); if (d) { S.user = cur; S.data = d; S.view = "practice"; try { SY.pin = sessionStorage.getItem("ac:pin"); } catch {} } } catch {} }
+  let pin = null;
+  try { pin = sessionStorage.getItem("ac:pin"); } catch {}
+  if (cur && (!CLOUD() || pin)) {
+    try {
+      const local = JSON.parse(ls.get(key(cur)));
+      if (local) { S.user = cur; S.data = local; S.view = "practice"; SY.pin = pin; }
+    } catch {}
+  }
   render();
 })();
