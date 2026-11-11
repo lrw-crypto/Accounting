@@ -1,2 +1,2 @@
-// 雲端同步網址(Google Apps Script 部署後貼在這裡;留空則只存在本機瀏覽器)
-window.CLOUD_URL = "";
+// Google Sheets sync for Accounting.
+window.CLOUD_URL = "https://script.google.com/macros/s/AKfycby1VQPaW7_Z_X4fg0lSHoqDmr3C4XKFuCPGr1gUnl1elkFL0OZX9jpgGHeNGx1EEmQjcw/exec?site=Accounting";
