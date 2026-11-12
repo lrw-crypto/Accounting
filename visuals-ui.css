@@ -3,7 +3,7 @@
 .original-paper figcaption { margin-top: .25rem; font-size: .85rem; }
 .original-paper-image { overflow-x: auto; }
 .original-zoom { display: inline-block; padding: .28rem .55rem; border: 1px solid #b8c9e4; border-radius: 5px; background: white; color: #184fa1; cursor: pointer; font: inherit; }
-.original-paper.is-zoomed img { width: max(100%, 1000px); max-width: none; }
+.original-paper.is-zoomed img { width: max(100%, 1500px); max-width: none; cursor: zoom-out; }
 .visual-lesson { margin: .85rem 0; padding: .75rem; border: 1px solid #8cb3b3; border-radius: 8px; background: #f3fbfa; color: #18343c; }
 .visual-lesson figcaption { margin-bottom: .5rem; }
 .visual-lesson p { margin: .5rem 0 0; }
@@ -19,3 +19,6 @@
 .visual-graph { display: block; max-width: 100%; width: min(100%, 450px); height: auto; }
 .pv .original-paper, .pv .visual-lesson { break-inside: avoid; }
 .pv .original-paper img { border: 0; }
+.original-paper-image { -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y pinch-zoom; }
+.original-paper img { cursor: zoom-in; image-rendering: auto; }
+@media print { .original-paper img { cursor: auto; } }

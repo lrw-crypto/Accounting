@@ -72,7 +72,7 @@ nav .pp button.on{background:var(--pri);color:#fff}
 .ps{white-space:pre-wrap}.pfig{max-width:70%;display:block;margin:6px 0}
 .pos{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-top:6px}.pos.img{grid-template-columns:1fr 1fr}.po img{max-width:100%;vertical-align:middle}
 .pwork{height:140px;border:1px dashed #aaa;border-radius:6px;margin-top:8px;color:#aaa;font-size:12px;padding:2px 6px}
-.pbreak{break-after:page;page-break-after:always}.pe ol{margin:4px 0;padding-left:22px}
+.pbreak{break-after:page;page-break-after:always;height:1px;margin:0;visibility:hidden}.pbreak+.phead{break-before:page;page-break-before:always;margin-top:0}.pe ol{margin:4px 0;padding-left:22px}
 @media print{body{background:#fff}.top,.noprint{display:none!important}main{max-width:none;padding:0}.pv{padding:0;border-radius:0}@page{size:A4;margin:14mm}}
 .katex-mathml{position:absolute!important;clip:rect(1px,1px,1px,1px);padding:0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden}
 .pw{white-space:pre-wrap;word-break:break-word}
@@ -84,3 +84,6 @@ nav .pp button.on{background:var(--pri);color:#fff}
 @media print{.tbl th{background:#eee!important}.tbl th,.tbl td{border-color:#888}}
 .kb .del{flex:1 0 auto;color:var(--bad)}
 #kq{margin-top:6px}
+/* 手機/平板:觸控目標與縮放 */
+@media(pointer:coarse){.kb button{min-width:40px;min-height:44px}.pad button{min-height:48px}input[type=text],input[type=password],input[type=number],select{font-size:16px}}
+.paper-scan{touch-action:pan-x pan-y pinch-zoom}

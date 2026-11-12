@@ -58,7 +58,7 @@
   window.QuizVisuals = {hasQuestion: q => Boolean(original[q.id]?.question), question, context, lesson};
 
   document.addEventListener('click', event => {
-    const button = event.target.closest('.original-zoom');
+    const button = event.target.closest('.original-zoom') || event.target.closest('.original-paper-image img')?.closest('.original-paper')?.querySelector('.original-zoom');
     if (!button) return;
     const figure = button.closest('.original-paper');
     const expanded = figure.classList.toggle('is-zoomed');
