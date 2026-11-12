@@ -1,0 +1,19 @@
+.original-paper { margin: .75rem 0; }
+.original-paper img { display: block; max-width: 100%; width: 100%; height: auto; background: white; border: 1px solid #cbd5e1; border-radius: 6px; }
+.original-paper figcaption { margin-top: .25rem; font-size: .85rem; }
+.original-paper a { color: #184fa1; text-decoration: underline; }
+.visual-lesson { margin: .85rem 0; padding: .75rem; border: 1px solid #8cb3b3; border-radius: 8px; background: #f3fbfa; color: #18343c; }
+.visual-lesson figcaption { margin-bottom: .5rem; }
+.visual-lesson p { margin: .5rem 0 0; }
+.visual-flow { display: grid; grid-template-columns: repeat(auto-fit,minmax(125px,1fr)); gap: .6rem; padding: 0; margin: 0; counter-reset: visual-step; list-style: none; }
+.visual-flow li { counter-increment: visual-step; border: 1px solid #b9d6d3; background: white; border-radius: 6px; padding: .45rem .55rem; }
+.visual-flow li strong, .visual-flow li span { display: block; }
+.visual-flow li strong::before { content: counter(visual-step) ". "; }
+.visual-flow li span { font-size: .9em; }
+.visual-table { overflow-x: auto; }
+.visual-table table { width: 100%; border-collapse: collapse; background: white; }
+.visual-table th,.visual-table td { border: 1px solid #b9d6d3; padding: .35rem .45rem; text-align: left; }
+.visual-table thead { background: #dbefec; }
+.visual-graph { display: block; max-width: 100%; width: min(100%, 450px); height: auto; }
+.pv .original-paper, .pv .visual-lesson { break-inside: avoid; }
+.pv .original-paper img { border: 0; }

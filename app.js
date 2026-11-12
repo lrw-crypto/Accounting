@@ -255,12 +255,12 @@ function vPrint() {
   <p id="pdf-status" class="note" role="status">練習題在前，答案與詳解在最後。</p></div>
   <div class="pv"><div class="phead"><h1>會計學 錯題練習卷</h1><div>姓名/代稱:${esc(S.user)}　日期:${ds}　共 ${qs.length} 題　　得分:______</div></div>
   ${qs.map((q, i) => `<section class="pq"><div class="pt"><b>${i + 1}.</b> <span class="src">(${exLabel(q.exam)} 第${q.q}題)</span></div>
-  <div class="ps">${rich(q.stem)}</div>${q.figure ? `<img class="pfig" src="${esc(q.figure)}" alt="">` : ""}
-  <div class="pos ${anyImg(q) ? "img" : ""}">${ks.map((k, j) => opt(q, k, j)).join("")}</div>${sp ? '<div class="pwork">計算區</div>' : ""}</section>`).join("")}
+  ${QuizVisuals.context(q, true)}${QuizVisuals.question(q, true) || `<div class="ps">${rich(q.stem)}</div>${q.figure ? `<img class="pfig" src="${esc(q.figure)}" alt="">` : ""}
+  <div class="pos ${anyImg(q) ? "img" : ""}">${ks.map((k, j) => opt(q, k, j)).join("")}</div>`}${sp ? '<div class="pwork">計算區</div>' : ""}</section>`).join("")}
   ${ans ? `<div class="pbreak"></div><div class="phead"><h1>解答與詳解</h1></div>
   <p class="pans"><b>答案速查:</b>${qs.map((q, i) => `${i + 1}. ${q.accept_all ? "送分" : q.answer}`).join("　")}</p>
   ${qs.map((q, i) => { const e = q.explain || {}; return `<section class="pe"><div class="pt"><b>${i + 1}.</b> 答案 ${q.accept_all ? "(送分)" : q.answer}　<span class="src">${esc(q.unit)}・${esc(q.topic)}</span></div>
-  ${e.concept ? `<div><b>考點:</b>${rich(e.concept)}</div>` : ""}${(e.steps || []).length ? `<ol>${e.steps.map(x => `<li>${rich(x)}</li>`).join("")}</ol>` : ""}${e.pitfalls ? `<div><b>常見陷阱</b> ${rich(e.pitfalls)}</div>` : ""}${Object.keys(e.distractors || {}).length ? `<h3>選項比對</h3><ul>${Object.entries(e.distractors).map(([letter, reason]) => `<li><b>${esc(letter)}.</b> ${rich(reason)}</li>`).join("")}</ul>` : ""}</section>`; }).join("")}` : ""}</div>`);
+  ${QuizVisuals.lesson(q)}${e.concept ? `<div><b>考點:</b>${rich(e.concept)}</div>` : ""}${(e.steps || []).length ? `<ol>${e.steps.map(x => `<li>${rich(x)}</li>`).join("")}</ol>` : ""}${e.pitfalls ? `<div><b>常見陷阱</b> ${rich(e.pitfalls)}</div>` : ""}${Object.keys(e.distractors || {}).length ? `<h3>選項比對</h3><ul>${Object.entries(e.distractors).map(([letter, reason]) => `<li><b>${esc(letter)}.</b> ${rich(reason)}</li>`).join("")}</ul>` : ""}</section>`; }).join("")}` : ""}</div>`);
   $app.querySelector("#doprint").onclick = () => window.print();
   const download = $app.querySelector("#dopdf");
   const status = $app.querySelector("#pdf-status");
@@ -289,20 +289,20 @@ function start(mode, qs) {
 const fmt = ms => { const s = Math.max(0, ms / 1000 | 0); return String((s / 60) | 0).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
 
 function optHtml(q, k, i, st) {
-  const o = q.options[i], body = /^IMG:/.test(o) ? `<img src="${esc(o.slice(4))}" alt="選項${k}">` : `${rich(o)}`;
+  const o = QuizVisuals.hasQuestion(q) ? "" : q.options[i], body = /^IMG:/.test(o) ? `<img src="${esc(o.slice(4))}" alt="選項${k}">` : `${rich(o)}`;
   return `<button class="opt ${st}" data-k="${k}" ${["right", "wrong", "lock"].includes(st) ? "disabled" : ""}><span class="k">${k}</span>${body}</button>`;
 }
 function qBlock(q, picked, reveal, noFeedbackSel) {
   const ks = ["A", "B", "C", "D"];
   const opts = ks.map((k, i) => { let st = ""; if (reveal) { st = (k === q.answer || (q.accept_all && k === picked)) ? "right" : (k === picked ? "wrong" : "lock"); } else if (k === picked) st = "sel"; return optHtml(q, k, i, st).replace('class="opt r"', 'class="opt right"'); }).join("");
   return `<div class="card"><div class="qhead"><span class="tag">${exLabel(q.exam)} 第${q.q}題</span><span>${esc(q.unit)}・${esc(q.topic)}</span>${q.verified === false ? '<span class="tag warn">解析待確認</span>' : ""}</div>
-  <div class="stem">${rich(q.stem)}</div>${q.figure ? `<img class="fig" src="${esc(q.figure)}" alt="題目附圖">` : ""}<div id="opts">${opts}</div>${reveal ? expHtml(q, picked) : ""}</div>`;
+  ${QuizVisuals.context(q)}${QuizVisuals.question(q) || `<div class="stem">${rich(q.stem)}</div>${q.figure ? `<img class="fig" src="${esc(q.figure)}" alt="題目附圖">` : ""}`}<div id="opts">${opts}</div>${reveal ? expHtml(q, picked) : ""}</div>`;
 }
 function expHtml(q, picked) {
   const ok = isOk(q, picked), e = q.explain || {}, dis = e.distractors || {};
   return `<div class="verdict ${ok ? "ok" : "bad"}">${ok ? "答對了!" : `答錯了。正確答案是 ${q.answer}`}${q.accept_all ? "(本題官方一律給分)" : ""}</div>
   <div class="exp">${!ok && picked && dis[picked] ? `<div class="hint">你選 ${picked}:${rich(dis[picked])}</div>` : ""}
-  ${e.concept ? `<h3>這題在考什麼</h3><div>${rich(e.concept)}</div>` : ""}
+  ${QuizVisuals.lesson(q)}${e.concept ? `<h3>這題在考什麼</h3><div>${rich(e.concept)}</div>` : ""}
   ${(e.steps || []).length ? `<h3>解題步驟</h3><ol>${e.steps.map(s => `<li>${rich(s)}</li>`).join("")}</ol>` : ""}
   ${e.pitfalls ? `<h3>常見陷阱</h3><div>${rich(e.pitfalls)}</div>` : ""}
   ${Object.keys(dis).filter(k => k !== picked).length ? `<details><summary>其他選項為什麼不對</summary>${Object.keys(dis).filter(k => k !== picked).map(k => `<p style="margin:6px 0"><b>${k}</b>:${rich(dis[k])}</p>`).join("")}</details>` : ""}
