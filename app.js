@@ -230,8 +230,8 @@ function vWrong() {
   ${l.length ? `<div class="card"><h2>清單 <span class="note" id="selc"></span></h2>
   <div class="row" style="margin-bottom:10px"><button class="chip" id="sa">全選</button><button class="chip" id="s2">只選一錯再錯(錯 2 次以上)</button><button class="chip" id="sn">全部取消</button></div>
   ${l.map(q => `<label class="wr"><input type="checkbox" data-s="${esc(q.id)}" ${S.sel.has(q.id) ? "checked" : ""}><span><span class="tag">${exLabel(q.exam)} 第${q.q}題</span> ${esc(q.unit)}・${esc(q.topic)} <span class="note">錯 ${S.data.wrong[q.id].n} 次</span></span></label>`).join("")}
-  <div class="pdfbar"><label class="inl"><input type="checkbox" id="wans" checked> 附解答與詳解頁</label><label class="inl"><input type="checkbox" id="wsp" checked> 每題留空白計算區</label>
-  <button class="btn" id="pdf">產生練習卷(列印 / 存成 PDF)</button></div></div>` : '<p class="empty">目前沒有錯題,太強了!</p>'}`);
+  <div class="pdfbar"><label class="inl"><input type="checkbox" id="wsp" checked> 每題留空白計算區</label>
+  <button class="btn" id="pdf">產生 A4 練習卷</button></div></div>` : '<p class="empty">目前沒有錯題,太強了!</p>'}`);
   const b = $app.querySelector("#go"); if (b) b.onclick = () => start("wrong", shuffle(l));
   if (!l.length) return;
   const upd = () => { $app.querySelector("#selc").textContent = `(已勾選 ${S.sel.size} 題)`; $app.querySelectorAll("[data-s]").forEach(c => c.checked = S.sel.has(c.dataset.s)); };
@@ -242,7 +242,7 @@ function vWrong() {
   $app.querySelector("#pdf").onclick = () => {
     const ids = l.filter(q => S.sel.has(q.id)).map(q => q.id);
     if (!ids.length) return alert("請先勾選要練習的題目");
-    S.pr = { ids, ans: $app.querySelector("#wans").checked, sp: $app.querySelector("#wsp").checked }; S.view = "print"; render();
+    S.pr = { ids, ans: true, sp: $app.querySelector("#wsp").checked }; S.view = "print"; render();
   };
   upd();
 }
@@ -251,8 +251,8 @@ function vPrint() {
   const ds = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`, ks = ["A", "B", "C", "D"];
   const opt = (q, k, i) => { const o = q.options[i]; return `<div class="po"><b>(${k})</b> ${/^IMG:/.test(o) ? `<img src="${esc(o.slice(4))}" alt="">` : `${rich(o)}`}</div>`; };
   const anyImg = q => q.options.some(o => /^IMG:/.test(o));
-  draw(`<div class="noprint ptool"><button class="btn ghost" data-go="wrong">← 回錯題本</button><button class="btn" id="doprint">🖨 列印 / 存成 PDF</button>
-  <p class="note">按「列印」後,在列印視窗的「目的地」選「另存為 PDF」(手機請選「列印」→「儲存為 PDF」)。建議紙張 A4。</p></div>
+  draw(`<div class="noprint ptool"><button class="btn ghost" data-go="wrong">← 回錯題本</button><button class="btn" id="dopdf">下載 A4 PDF</button> <button class="btn ghost" id="doprint">列印</button>
+  <p id="pdf-status" class="note" role="status">練習題在前，答案與詳解在最後。</p></div>
   <div class="pv"><div class="phead"><h1>會計學 錯題練習卷</h1><div>姓名/代稱:${esc(S.user)}　日期:${ds}　共 ${qs.length} 題　　得分:______</div></div>
   ${qs.map((q, i) => `<section class="pq"><div class="pt"><b>${i + 1}.</b> <span class="src">(${exLabel(q.exam)} 第${q.q}題)</span></div>
   <div class="ps">${rich(q.stem)}</div>${q.figure ? `<img class="pfig" src="${esc(q.figure)}" alt="">` : ""}
@@ -260,8 +260,24 @@ function vPrint() {
   ${ans ? `<div class="pbreak"></div><div class="phead"><h1>解答與詳解</h1></div>
   <p class="pans"><b>答案速查:</b>${qs.map((q, i) => `${i + 1}. ${q.accept_all ? "送分" : q.answer}`).join("　")}</p>
   ${qs.map((q, i) => { const e = q.explain || {}; return `<section class="pe"><div class="pt"><b>${i + 1}.</b> 答案 ${q.accept_all ? "(送分)" : q.answer}　<span class="src">${esc(q.unit)}・${esc(q.topic)}</span></div>
-  ${e.concept ? `<div><b>考點:</b>${rich(e.concept)}</div>` : ""}${(e.steps || []).length ? `<ol>${e.steps.map(x => `<li>${rich(x)}</li>`).join("")}</ol>` : ""}${e.pitfalls ? `<div><b>易錯:</b>${rich(e.pitfalls)}</div>` : ""}</section>`; }).join("")}` : ""}</div>`);
+  ${e.concept ? `<div><b>考點:</b>${rich(e.concept)}</div>` : ""}${(e.steps || []).length ? `<ol>${e.steps.map(x => `<li>${rich(x)}</li>`).join("")}</ol>` : ""}${e.pitfalls ? `<div><b>常見陷阱</b> ${rich(e.pitfalls)}</div>` : ""}${Object.keys(e.distractors || {}).length ? `<h3>選項比對</h3><ul>${Object.entries(e.distractors).map(([letter, reason]) => `<li><b>${esc(letter)}.</b> ${rich(reason)}</li>`).join("")}</ul>` : ""}</section>`; }).join("")}` : ""}</div>`);
   $app.querySelector("#doprint").onclick = () => window.print();
+  const download = $app.querySelector("#dopdf");
+  const status = $app.querySelector("#pdf-status");
+  download.onclick = async () => {
+    download.disabled = true;
+    status.textContent = "正在製作 PDF…";
+    try {
+      await window.saveWorksheet($app.querySelector(".pv"), page => {
+        status.textContent = `正在製作第 ${page} 頁…`;
+      });
+      status.textContent = "PDF 已產生，請查看下載項目。";
+    } catch {
+      status.textContent = "PDF 下載失敗。可按「列印」，選擇儲存為 PDF。";
+    } finally {
+      download.disabled = false;
+    }
+  };
 }
 /* ---------- 作答流程 ---------- */
 function start(mode, qs) {
