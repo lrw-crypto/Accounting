@@ -55,7 +55,7 @@
       <p>${escape(visual.note)}</p></figure>`;
   }
 
-  window.QuizVisuals = {hasQuestion: q => Boolean(original[q.id]?.question), question, context, lesson};
+  window.QuizVisuals = {textOnly: q => Boolean(original[q.id]?.textOnly), hasQuestion: q => Boolean(original[q.id]?.question), question, context, lesson};
 
   document.addEventListener('click', event => {
     const button = event.target.closest('.original-zoom') || event.target.closest('.original-paper-image img')?.closest('.original-paper')?.querySelector('.original-zoom');
