@@ -9,9 +9,10 @@ const isOk = (q, k) => !!k && (q.accept_all || k === q.answer);
 const EXAM_MIN = 40;
 const $app = document.getElementById("app"), $nav = document.getElementById("nav");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const mk = h => h.replace(/\^\{([^{}]*)\}/g, "<sup>$1</sup>").replace(/_\{([^{}]*)\}/g, "<sub>$1</sub>").replace(/\\u\{([^{}]*)\}/g, "<u>$1</u>").replace(/\\frac\{((?:[^{}]|<[^>]*>)*)\}\{((?:[^{}]|<[^>]*>)*)\}/g, '<span class="fr"><span>$1</span><span>$2</span></span>').replace(/\\sqrt\{((?:[^{}]|<[^>]*>)*)\}/g, '√<span class="ov">$1</span>');
 const rich = s => {
   const L = String(s ?? "").split("\n"), out = [], isRow = l => /^\s*\|.*\|\s*$/.test(l), isSep = l => /^\s*\|[\s:\-|]+\|\s*$/.test(l), cells = l => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
-  let buf = []; const flush = () => { const t = buf.join("\n").replace(/^\n+|\n+$/g, ""); if (t) out.push(`<span class="pw">${esc(t)}</span>`); buf = []; };
+  let buf = []; const flush = () => { const t = buf.join("\n").replace(/^\n+|\n+$/g, ""); if (t) out.push(`<span class="pw">${mk(esc(t))}</span>`); buf = []; };
   for (let i = 0; i < L.length; i++) {
     if (isRow(L[i]) && i + 1 < L.length && isSep(L[i + 1])) {
       flush(); const h = cells(L[i]); let j = i + 2, rows = [];

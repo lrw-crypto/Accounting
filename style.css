@@ -87,3 +87,5 @@ nav .pp button.on{background:var(--pri);color:#fff}
 /* 手機/平板:觸控目標與縮放 */
 @media(pointer:coarse){.kb button{min-width:40px;min-height:44px}.pad button{min-height:48px}input[type=text],input[type=password],input[type=number],select{font-size:16px}}
 .paper-scan{touch-action:pan-x pan-y pinch-zoom}
+
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .15em;line-height:1.15;font-size:.92em}.fr>span:first-child{border-bottom:1px solid currentColor;padding:0 .2em}.fr>span:last-child{padding:0 .2em}.ov{border-top:1px solid currentColor}sup,sub{line-height:0;font-size:.75em}
