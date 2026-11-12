@@ -11,8 +11,9 @@
   function images(files, label, description, print) {
     return files.map((file, i) => {
       const alt = i ? label + '（續頁）' : description || label;
-      return `<figure class="original-paper"><img src="${escape(file)}" alt="${escape(alt)}">
-        ${print ? '' : `<figcaption><a href="${escape(file)}" target="_blank" rel="noopener">${label}${files.length > 1 ? ' · ' + (i + 1) : ''}　開啟大圖</a></figcaption>`}
+      const caption = label + (files.length > 1 ? ' · ' + (i + 1) : '');
+      return `<figure class="original-paper"><div class="original-paper-image"><img src="${escape(file)}" alt="${escape(alt)}"></div>
+        ${print ? '' : `<figcaption><button type="button" class="original-zoom" aria-pressed="false" aria-label="在本頁放大${escape(caption)}">放大原圖</button></figcaption>`}
         </figure>`;
     }).join('');
   }
@@ -55,4 +56,19 @@
   }
 
   window.QuizVisuals = {hasQuestion: q => Boolean(original[q.id]?.question), question, context, lesson};
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest('.original-zoom');
+    if (!button) return;
+    const figure = button.closest('.original-paper');
+    const expanded = figure.classList.toggle('is-zoomed');
+    button.setAttribute('aria-pressed', String(expanded));
+    button.textContent = expanded ? '還原大小' : '放大原圖';
+    button.setAttribute('aria-label', button.textContent);
+    const viewer = figure.querySelector('.original-paper-image');
+    viewer.scrollLeft = 0;
+    if (expanded) viewer.setAttribute('tabindex', '0');
+    else viewer.removeAttribute('tabindex');
+    figure.scrollIntoView({block:'nearest'});
+  });
 })();
