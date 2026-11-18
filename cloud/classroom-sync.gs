@@ -8,6 +8,8 @@ const SITE_TABS = Object.freeze({
   Accounting: '會計學',
   Business: '商業概論',
   testmath: '數學',
+  english: '英文',
+  chinese: '國文',
 });
 const LEGACY_MATH_SALT = '請改成你自己隨便打的一串字';
 const CHUNK_SIZE = 35000;
